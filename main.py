@@ -13,7 +13,6 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from aiogram import Bot
 
-
 # Объявление бота
 bot = Bot('5079044432:AAEzSuphtSBX8R0Fto-JKXADeMbvz9BvZzE')
 dp = Dispatcher(bot)
@@ -22,44 +21,49 @@ dp = Dispatcher(bot)
 # Система приема сообщений
 @dp.message_handler(content_types=["photo"])
 async def get_photo(message):
-    file_info = await bot.get_file(message.photo[-1].file_id)
-    print('get photo')
+  file_info = await bot.get_file(message.photo[-1].file_id)
+  print('get photo')
 
-    await bot.send_message(message.from_user.id, 'Ожидайте...')
+  await bot.send_message(message.from_user.id, 'Ожидайте...')
 
-    await message.photo[-1].download('info.' + file_info.file_path.split('.')[-1])  # ++
-    text = read_image('info.' + file_info.file_path.split('.')[-1])
+  await message.photo[-1].download('info.' + file_info.file_path.split('.')[-1])  # ++
+  text = read_image('info.' + file_info.file_path.split('.')[-1])
+  file_text = open('txt.txt', 'r')
+  if text == file_text.read():
+    await bot.send_message(message.from_user.id, 'Не удалось найти текст на картинке')
+    return False
+  file_text.close()
 
-    say(text)
+  say(text)
 
-    file = open('text_to_speech.mp3', 'rb')
-    await bot.send_audio(message.from_user.id, file, reply_to_message_id=message.message_id)
-    file.close()
-    print('message sent')
+  file = open('text_to_speech.mp3', 'rb')
+  await bot.send_audio(message.from_user.id, file, reply_to_message_id=message.message_id)
+  file.close()
+  print('message sent')
 
 
 # Чтение изображения
 def read_image(file):
-    image = Image.open(file)
+  image = Image.open(file)
 
-    text = pytesseract.image_to_string(image, lang='rus')
+  text = pytesseract.image_to_string(image, lang='rus')
 
-    print('final read image')
+  print('final read image')
 
-    return text
+  return text
 
 
 # Проговаривание текста
 def say(text):
-    tts = gtts.gTTS(text, lang='ru')
-    tts.save('text_to_speech.mp3')
+  tts = gtts.gTTS(text, lang='ru')
+  tts.save('text_to_speech.mp3')
 
-    time.sleep(5)
+  time.sleep(5)
 
-    print('audio saved!')
+  print('audio saved!')
 
 
 # Запуск приложения
 if __name__ == '__main__':
-    print('bot started')
-    executor.start_polling(dp)
+  print('bot started')
+  executor.start_polling(dp)
